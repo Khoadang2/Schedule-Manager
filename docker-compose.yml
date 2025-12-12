@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: schedule-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Qweasd@123
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - app-network
+    restart: always
+
+  backend:
+    build: ./backend
+    container_name: schedule-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - FRONTEND_URL=http://192.168.71.106:8080
+      - DB_WEB_USER=sa
+      - DB_WEB_PASSWORD=Qweasd@123
+      - DB_WEB_SERVER=192.168.71.111  # ⭐ Sử dụng tên service
+      - DB_WEB_DATABASE=WEB_IP
+      - DB_PORT=1433
+      - DB_ENCRYPT=false
+      - JWT_SECRET=your-super-secret-key-here
+      - JWT_EXPIRES_IN=7d
+    volumes:
+      - backend-uploads:/app/uploads
+    networks:
+      - app-network
+    depends_on:
+      - sqlserver
+    restart: always   
+
+  frontend:
+    build: ./frontend
+    container_name: schedule-frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: always   
+
+volumes:
+    backend-uploads:
+    sqlserver-data:
+
+networks:
+  app-network:
+    driver: bridge
