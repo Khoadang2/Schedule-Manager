@@ -44,6 +44,7 @@ export default function App() {
           setLoginData(prev => ({ ...prev, userid: savedUserid }));
           setIsLoggedIn(true);
 
+
           // ✅ SYNC NGẦM - KHÔNG BLOCK UI
           setTimeout(() => {
             loadAllUsers(true, { force: true });
